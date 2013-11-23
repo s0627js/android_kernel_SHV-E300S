@@ -266,7 +266,6 @@ void gpu_clock_disable()
 /*this function using for DVFS*/
 void gpu_clock_set(int sgx_clk)
 {
-	int old_clk = clk_get_rate(g3d_clock_core)/MHZ;
 
 	if (clk_get_rate(fout_vpll_clock)/MHZ != sgx_clk)
 		sgx_gpu_src_clk = clk_set_rate(fout_vpll_clock, sgx_clk * MHZ);
@@ -293,11 +292,7 @@ void gpu_clock_set(int sgx_clk)
 				bts = __raw_readl(sgx_bts_base+0xc);
 			else
 				bts = 0;
-
-			//PVR_LOG(("SGX change clock [%d] Mhz -> [%d] MHz req [%d] MHz / M[%d] / B[%d]", old_clk, sgx_gpu_clk, sgx_clk, (800/mif_sdiv), bts));
 		}
-#else
-		//PVR_LOG(("SGX change clock [%d] Mhz -> [%d] MHz req [%d] MHz / M[%d]", old_clk, sgx_gpu_clk, sgx_clk, (800/mif_sdiv)));
 #endif
 	}
 #endif
