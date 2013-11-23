@@ -1,0 +1,108 @@
+From 44123bf20d59e839098653cf4382ebc114bff8bc Mon Sep 17 00:00:00 2001
+From: DiaDust <diadust0514@gmail.com>
+Date: Wed, 16 Oct 2013 18:36:01 +0900
+Subject: [PATCH] error: drivers: inlining failed in call to always_inline when
+ build with GCC 4.7
+
+---
+ drivers/media/video/exynos/fimc-is-mc2/fimc-is-video.h | 4 ++--
+ drivers/media/video/exynos/fimc-lite/fimc-lite-core.h  | 8 ++++----
+ drivers/media/video/exynos/fimg2d/fimg2d.h             | 2 +-
+ drivers/media/video/exynos/mfc/s5p_mfc_common.h        | 4 ++--
+ drivers/video/samsung_extdisp/s3cfb_extdsp.h           | 2 +-
+ 5 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/media/video/exynos/fimc-is-mc2/fimc-is-video.h b/drivers/media/video/exynos/fimc-is-mc2/fimc-is-video.h
+index eae182d..b1cdea3 100644
+--- a/drivers/media/video/exynos/fimc-is-mc2/fimc-is-video.h
++++ b/drivers/media/video/exynos/fimc-is-mc2/fimc-is-video.h
+@@ -141,8 +141,8 @@ int fimc_is_queue_setup(struct fimc_is_queue *queue,
+ int fimc_is_queue_buffer_queue(struct fimc_is_queue *queue,
+ 	const struct fimc_is_vb2 *vb2,
+ 	struct vb2_buffer *vb);
+-inline void fimc_is_queue_wait_prepare(struct vb2_queue *vbq);
+-inline void fimc_is_queue_wait_finish(struct vb2_queue *vbq);
++void fimc_is_queue_wait_prepare(struct vb2_queue *vbq);
++void fimc_is_queue_wait_finish(struct vb2_queue *vbq);
+ int fimc_is_queue_start_streaming(struct fimc_is_queue *queue,
+ 	struct fimc_is_device_ischain *device,
+ 	struct fimc_is_subdev *subdev,
+diff --git a/drivers/media/video/exynos/fimc-lite/fimc-lite-core.h b/drivers/media/video/exynos/fimc-lite/fimc-lite-core.h
+index 5942a12..1d2116c 100644
+--- a/drivers/media/video/exynos/fimc-lite/fimc-lite-core.h
++++ b/drivers/media/video/exynos/fimc-lite/fimc-lite-core.h
+@@ -276,25 +276,25 @@ void flite_hw_set_output_addr(struct flite_dev *dev, struct flite_addr *addr,
+ #endif
+ 
+ /* inline function for performance-sensitive region */
+-static inline void flite_hw_clear_irq(struct flite_dev *dev)
++static void flite_hw_clear_irq(struct flite_dev *dev)
+ {
+ 	u32 cfg = readl(dev->regs + FLITE_REG_CISTATUS);
+ 	cfg &= ~FLITE_REG_CISTATUS_IRQ_CAM;
+ 	writel(cfg, dev->regs + FLITE_REG_CISTATUS);
+ }
+ 
+-static inline void flite_hw_get_int_src(struct flite_dev *dev, u32 *src)
++static void flite_hw_get_int_src(struct flite_dev *dev, u32 *src)
+ {
+ 	*src = readl(dev->regs + FLITE_REG_CISTATUS);
+ 	*src &= FLITE_REG_CISTATUS_IRQ_MASK;
+ }
+ 
+-static inline void user_to_drv(struct v4l2_ctrl *ctrl, s32 value)
++static void user_to_drv(struct v4l2_ctrl *ctrl, s32 value)
+ {
+ 	ctrl->cur.val = ctrl->val = value;
+ }
+ 
+-inline struct flite_fmt const *find_flite_format(struct v4l2_mbus_framefmt *mf);
++struct flite_fmt const *find_flite_format(struct v4l2_mbus_framefmt *mf);
+ 
+ /*
+  * Add buf to the capture active buffers queue.
+diff --git a/drivers/media/video/exynos/fimg2d/fimg2d.h b/drivers/media/video/exynos/fimg2d/fimg2d.h
+index 68423ed..9c3e7cb 100644
+--- a/drivers/media/video/exynos/fimg2d/fimg2d.h
++++ b/drivers/media/video/exynos/fimg2d/fimg2d.h
+@@ -523,7 +523,7 @@ struct fimg2d_control {
+ int fimg2d_register_ops(struct fimg2d_control *ctrl);
+ int fimg2d_ip_version_is(void);
+ int bit_per_pixel(struct fimg2d_image *img, int plane);
+-inline int width2bytes(int width, int bpp);
++int width2bytes(int width, int bpp);
+ 
+ #ifdef BLIT_WORKQUE
+ #define g2d_lock(x)		do {} while (0)
+diff --git a/drivers/media/video/exynos/mfc/s5p_mfc_common.h b/drivers/media/video/exynos/mfc/s5p_mfc_common.h
+index 073c307..2d60f4f 100644
+--- a/drivers/media/video/exynos/mfc/s5p_mfc_common.h
++++ b/drivers/media/video/exynos/mfc/s5p_mfc_common.h
+@@ -756,8 +756,8 @@ struct s5p_mfc_fmt {
+ };
+ 
+ int get_framerate(struct timeval *to, struct timeval *from);
+-inline int clear_hw_bit(struct s5p_mfc_ctx *ctx);
+-inline int s5p_mfc_get_new_ctx(struct s5p_mfc_dev *dev);
++int clear_hw_bit(struct s5p_mfc_ctx *ctx);
++int s5p_mfc_get_new_ctx(struct s5p_mfc_dev *dev);
+ 
+ #if defined(CONFIG_EXYNOS_MFC_V5)
+ #include "regs-mfc-v5.h"
+diff --git a/drivers/video/samsung_extdisp/s3cfb_extdsp.h b/drivers/video/samsung_extdisp/s3cfb_extdsp.h
+index 32d73a8..3aa4ee7 100644
+--- a/drivers/video/samsung_extdisp/s3cfb_extdsp.h
++++ b/drivers/video/samsung_extdisp/s3cfb_extdsp.h
+@@ -140,7 +140,7 @@ struct s3cfb_extdsp_user_window {
+ #define S3CFB_EXTDSP_UNMAP_FD			_IOW('F', 330, unsigned int)
+ 
+ extern struct fb_ops s3cfb_extdsp_ops;
+-extern inline struct s3cfb_extdsp_global *get_extdsp_global(int id);
++extern struct s3cfb_extdsp_global *get_extdsp_global(int id);
+ 
+ /* S3CFB_EXTDSP */
+ extern int s3cfb_extdsp_enable_window(struct s3cfb_extdsp_global *fbdev, int id);
+-- 
+1.8.4
+
+
