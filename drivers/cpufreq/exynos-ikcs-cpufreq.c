@@ -257,6 +257,16 @@ static bool is_alive(unsigned int cluster)
 	return tmp ? true : false;
 }
 
+void exynos_enforce_policy(struct cpufreq_policy *policy)
+{
+	/* Squash unwanted frequencies in the CA7 range */
+	if (policy->min > step_level_CA7_max && policy->min <= STEP_LEVEL_CA7_MAX)
+		policy->min = step_level_CA7_max;
+
+	if (policy->max > step_level_CA7_max && policy->max <= STEP_LEVEL_CA7_MAX)
+		policy->max = step_level_CA7_max;
+}
+
 int exynos_verify_speed(struct cpufreq_policy *policy)
 {
 	return cpufreq_frequency_table_verify(policy, merge_freq_table);
@@ -775,7 +785,9 @@ static ssize_t show_freq_table(struct kobject *kobj,
 	int i, count = 0;
 
 	for (i = 0; merge_freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
-		if (merge_freq_table[i].frequency != CPUFREQ_ENTRY_INVALID)
+		if (merge_freq_table[i].frequency != CPUFREQ_ENTRY_INVALID && 
+			merge_freq_table[i].frequency <= 1600000 &&
+			merge_freq_table[i].frequency >= 250000)
 			count += sprintf(&buf[count], "%d ",
 				merge_freq_table[i].frequency);
         }
