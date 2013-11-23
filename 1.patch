@@ -1,65 +1,29 @@
-From 99511b3fa3764c78059d4fde30035f9753600a5d Mon Sep 17 00:00:00 2001
+From ce51032e49c460d3b73f2e2e9632748180ab5b1b Mon Sep 17 00:00:00 2001
 From: DiaDust <diadust0514@gmail.com>
-Date: Wed, 31 Jul 2013 18:39:15 +0900
-Subject: [PATCH] mm : pass readahead info down to the i/o scheduler Some i/o
- schedulers (i.e. row-iosched, cfq-iosched) deploy an idling algorithm in
- order to be better synced with the readahead algorithm. Idling is a
- prediction algorithm for incoming read requests.
+Date: Sun, 11 Aug 2013 19:10:16 +0900
+Subject: [PATCH] cpufreq : allow cpufreq CA7 100MHz set min clock 200Mhz
 
-In this patch we mark pages which are part of a readahead window, by
-setting a newly introduced flag. With this flag, the i/o scheduler can
-identify a request which is associated with a readahead page. This
-enables the i/o scheduler's idling mechanism to be en-sync with the
-readahead mechanism and, in turn, can increase read throughput.
-
-Change-Id: I0654f23315b6d19d71bcc9cc029c6b281a44b196
-Signed-off-by: Lee Susman <lsusman@codeaurora.org>
-
-from https://github.com/CyanogenMod/android_kernel_samsung_jf
 ---
- include/linux/page-flags.h | 1 +
- mm/page_alloc.c            | 1 +
- mm/readahead.c             | 3 +++
- 3 files changed, 5 insertions(+)
+ drivers/cpufreq/exynos5410-cpufreq.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index c88d2a9..d850538 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -108,6 +108,7 @@ enum pageflags {
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- 	PG_compound_lock,
- #endif
-+	PG_readahead,    /* page in a readahead window */
- 	__NR_PAGEFLAGS,
+diff --git a/drivers/cpufreq/exynos5410-cpufreq.c b/drivers/cpufreq/exynos5410-cpufreq.c
+index c96f935..997cd66 100644
+--- a/drivers/cpufreq/exynos5410-cpufreq.c
++++ b/drivers/cpufreq/exynos5410-cpufreq.c
+@@ -825,11 +825,7 @@ static void __init set_volt_table_CA7(void)
+ 		max_support_idx_CA7 = L7;
+ 	}
  
- 	/* Filesystems */
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index ee440f1..3855e4a 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -5674,6 +5674,7 @@ bool is_free_buddy_page(struct page *page)
- #ifdef CONFIG_MEMORY_FAILURE
- 	{1UL << PG_hwpoison,		"hwpoison"	},
- #endif
-+	{1UL << PG_readahead,           "PG_readahead"  },
- 	{-1UL,				NULL		},
- };
+-	exynos5410_freq_table_CA7[L9].frequency = CPUFREQ_ENTRY_INVALID;
+-	exynos5410_freq_table_CA7[L10].frequency = CPUFREQ_ENTRY_INVALID;
+-	exynos5410_freq_table_CA7[L11].frequency = CPUFREQ_ENTRY_INVALID;
+-
+-	min_support_idx_CA7 = L8;
++	min_support_idx_CA7 = L11;
+ }
  
-diff --git a/mm/readahead.c b/mm/readahead.c
-index cbcbb02..5e61ebe 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -184,6 +184,9 @@ static int read_pages(struct address_space *mapping, struct file *filp,
- 		if (!page)
- 			break;
- 		page->index = page_offset;
-+
-+		page->flags |= (1L << PG_readahead);
-+
- 		list_add(&page->lru, &page_pool);
- 		if (page_idx == nr_to_read - lookahead_size)
- 			SetPageReadahead(page);
+ static void __init set_volt_table_CA15(void)
 -- 
 1.8.4
 
